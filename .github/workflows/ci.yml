@@ -38,6 +38,9 @@ jobs:
       - name: Instalar dependencias
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Auditar dependencias
+        run: composer audit --locked
+
       - name: Estilo
         run: composer cs
 

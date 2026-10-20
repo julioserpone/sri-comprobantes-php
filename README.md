@@ -43,19 +43,29 @@ Electrónicos Offline v2.34 (julio 2026)**.
 
 ## Instalación
 
-```bash
-composer require julioserpone/sri-comprobantes-php
-```
-
-Si el repositorio aún es privado, configure el acceso de Composer a GitHub y
-use la URL VCS:
+El paquete **todavía no está publicado en Packagist**. Mientras tanto, instálelo
+desde el repositorio VCS. Si el repositorio es privado, configure las
+credenciales de GitHub para Composer.
 
 ```json
 {
   "repositories": [
     { "type": "vcs", "url": "https://github.com/julioserpone/sri-comprobantes-php" }
-  ]
+  ],
+  "require": {
+    "julioserpone/sri-comprobantes-php": "^0.1"
+  }
 }
+```
+
+```bash
+composer update julioserpone/sri-comprobantes-php
+```
+
+Cuando se publique en Packagist, bastará con:
+
+```bash
+composer require julioserpone/sri-comprobantes-php
 ```
 
 ## Inicio rápido

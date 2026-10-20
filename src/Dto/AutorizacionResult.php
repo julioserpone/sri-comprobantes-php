@@ -38,7 +38,9 @@ final readonly class AutorizacionResult
 
     public function estado(): string
     {
-        return $this->first()->estado ?? 'SIN_RESPUESTA';
+        $first = $this->first();
+
+        return $first === null ? 'SIN_RESPUESTA' : $first->estado;
     }
 
     public function isAutorizado(): bool

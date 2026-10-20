@@ -28,7 +28,6 @@ final readonly class ConsultaResult
     {
         $data = Arr::unwrap($data, 'EstadoAutorizacionComprobante');
         $items = Arr::listOf($data['mensajes']['mensaje'] ?? $data['mensajes'] ?? []);
-        $fecha = Arr::string($data, 'fechaAutorizacion');
 
         return new self(
             Arr::string($data, 'claveAcceso'),
@@ -36,7 +35,7 @@ final readonly class ConsultaResult
             Arr::string($data, 'estadoConsulta'),
             Arr::string($data, 'tipoComprobante'),
             Arr::string($data, 'rucEmisor'),
-            $fecha ? new DateTimeImmutable($fecha) : null,
+            self::parseDate(Arr::string($data, 'fechaAutorizacion')),
             array_map(static fn (array $item): Mensaje => Mensaje::fromArray($item), $items),
         );
     }
@@ -49,5 +48,18 @@ final readonly class ConsultaResult
     public function isRechazada(): bool
     {
         return strtoupper((string) $this->estadoConsulta) === 'RECHAZADA';
+    }
+
+    private static function parseDate(?string $value): ?DateTimeImmutable
+    {
+        if ($value === null || trim($value) === '') {
+            return null;
+        }
+
+        try {
+            return new DateTimeImmutable($value);
+        } catch (\Exception) {
+            return null;
+        }
     }
 }
