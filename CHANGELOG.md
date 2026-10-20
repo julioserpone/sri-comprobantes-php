@@ -13,6 +13,15 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
   ADR 0005).
 - Persistencia transaccional para múltiples nodos.
 
+## [0.1.2] - 2026-10-20
+
+### Documentación
+
+- Repositorio público y ruleset `main-protection` activo sobre `main`.
+- PR obligatorio, historial lineal y check `ci-success` requerido.
+- Corrección del JSON del ruleset para la API de GitHub.
+- `scripts/setup-github.sh` actualiza el ruleset existente además de crearlo.
+
 ## [0.1.1] - 2026-10-20
 
 ### Corregido
@@ -53,6 +62,7 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
 - Validación TLS estricta por defecto.
 - Límite de tamaño y escape de CDATA en lotes.
 
-[Unreleased]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/julioserpone/sri-comprobantes-php/releases/tag/v0.1.0

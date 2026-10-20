@@ -47,8 +47,16 @@ gh api -X PUT "repos/${REPO}/vulnerability-alerts" >/dev/null || \
 gh api -X PUT "repos/${REPO}/automated-security-fixes" >/dev/null || \
   echo "   Aviso: no se pudieron habilitar las correcciones automáticas."
 
-if gh api "repos/${REPO}/rulesets" --jq '.[].name' 2>/dev/null | grep -qx 'main-protection'; then
-  echo "==> El ruleset 'main-protection' ya existe; no se modifica."
+EXISTING_ID="$(gh api "repos/${REPO}/rulesets" --jq '.[] | select(.name == "main-protection") | .id' 2>/dev/null | head -n 1 || true)"
+
+if [ -n "${EXISTING_ID}" ]; then
+  echo "==> Actualizando ruleset 'main-protection' (${EXISTING_ID})"
+  if gh api -X PUT "repos/${REPO}/rulesets/${EXISTING_ID}" \
+    --input "${ROOT}/.github/rulesets/main.json" >/dev/null; then
+    echo "   Ruleset actualizado."
+  else
+    echo "   Aviso: no se pudo actualizar el ruleset."
+  fi
 else
   echo "==> Creando ruleset 'main-protection'"
   if gh api -X POST "repos/${REPO}/rulesets" --input "${ROOT}/.github/rulesets/main.json" >/dev/null; then
