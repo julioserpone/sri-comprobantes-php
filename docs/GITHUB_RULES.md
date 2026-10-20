@@ -4,6 +4,18 @@ Este documento describe cómo está configurado el repositorio y cómo replicar
 las reglas en otro fork. La configuración se aplica con GitHub CLI y queda
 versionada en `.github/`.
 
+## 0. Estado actual (20/10/2026)
+
+- Repositorio **privado** en una cuenta sin GitHub Pro.
+- GitHub rechazó la creación del ruleset con **HTTP 403**: "Upgrade to GitHub
+  Pro or make this repository public to enable this feature".
+- Por lo tanto, **la protección de `main` no está activa todavía**. El CI sí
+  está activo y ejecuta la matriz de PHP 8.2–8.5.
+- Para activarla: haga el repo público o pase a un plan con rulesets y ejecute
+  `./scripts/setup-github.sh julioserpone/sri-comprobantes-php`.
+- Mientras no haya protección, no haga push directo a `main` por costumbre:
+  use ramas y PR para mantener el historial.
+
 ## 1. Configuración del repositorio
 
 | Ajuste | Valor | Motivo |
