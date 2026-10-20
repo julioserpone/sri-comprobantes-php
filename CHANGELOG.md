@@ -6,6 +6,19 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
 
 ## [Unreleased]
 
+### Corregido
+
+- `ConsultaResult` ignora fechas inválidas en lugar de lanzar una excepción.
+- `AutorizacionResult::estado()` maneja explícitamente la ausencia de
+  autorizaciones.
+- El script de consulta usa la propiedad `mensajes` del DTO.
+- CI ejecuta `composer audit --locked`.
+
+### Documentación
+
+- Instalación vía VCS mientras el paquete no esté en Packagist.
+- Limitación de rulesets en repositorios privados sin GitHub Pro.
+
 ### Por hacer
 
 - Firmador XAdES-BES de referencia (fuera del alcance actual; ver ADR 0002).
