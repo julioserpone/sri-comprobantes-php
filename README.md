@@ -44,8 +44,8 @@ Electrónicos Offline v2.34 (julio 2026)**.
 ## Instalación
 
 El paquete **todavía no está publicado en Packagist**. Mientras tanto, instálelo
-desde el repositorio VCS. Si el repositorio es privado, configure las
-credenciales de GitHub para Composer.
+desde el repositorio VCS. Si en el futuro el repositorio vuelve a ser privado,
+configure las credenciales de GitHub para Composer.
 
 ```json
 {
