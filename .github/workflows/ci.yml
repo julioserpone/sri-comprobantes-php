@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: tests (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, libxml, openssl, soap
+          coverage: none
+          tools: composer:v2
+
+      - name: Validar composer.json
+        run: composer validate --strict
+
+      - name: Instalar dependencias
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Estilo
+        run: composer cs
+
+      - name: Análisis estático
+        run: composer analyse
+
+      - name: Pruebas
+        run: composer test
+
+  ci-success:
+    name: ci-success
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resultado
+        run: echo "Todas las verificaciones pasaron."

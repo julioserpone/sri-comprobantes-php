@@ -1,0 +1,22 @@
+# Checklist de emisión
+
+- [ ] Tipo, versión y anexos identificados con fuente.
+- [ ] XSD oficial localizado y versionado.
+- [ ] Clave de 49 dígitos; módulo 11 correcto.
+- [ ] Componentes de la clave coinciden con el XML.
+- [ ] XML bien formado, UTF-8, sin BOM, `&` escapado.
+- [ ] Totales, impuestos y descuentos validados.
+- [ ] Firma XAdES-BES validada en certificación.
+- [ ] `KeyInfo` incluye el certificado; `SignedProperties` firmado.
+- [ ] Tamaño individual ≤ 320 KB.
+- [ ] Lote ≤ 50 comprobantes / 500 KB.
+- [ ] Cada comprobante del lote está firmado.
+- [ ] `validarComprobante` devuelve `RECIBIDA`.
+- [ ] Polling de autorización con backoff y límite de 24 h.
+- [ ] `DEVUELTA`/`NAT` corregidos y reenviados con la misma clave.
+- [ ] `PPR`/70 no se reenvían.
+- [ ] XML autorizado, estado y respuestas persistidos.
+- [ ] Receptor notificado cuando corresponde.
+- [ ] Anexo 26 (`RUC Proveedor`) evaluado.
+- [ ] Sin secretos ni datos personales en logs.
+- [ ] `composer check` verde.

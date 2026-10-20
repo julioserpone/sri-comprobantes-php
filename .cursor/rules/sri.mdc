@@ -1,0 +1,22 @@
+---
+description: Reglas del proyecto SRI Comprobantes PHP
+globs: ["**/*.php", "docs/**/*.md", "AGENTS.md", "composer.json"]
+alwaysApply: true
+---
+
+# SRI Comprobantes PHP
+
+Lea `AGENTS.md` para el contrato completo. Reglas mínimas:
+
+- No invente endpoints, operaciones, campos, códigos ni límites del SRI. Cite
+  ficha v2.34 (sección/página) o WSDL y fecha.
+- Endpoints vigentes: `*Offline` y `ConsultaComprobante`/`ConsultaFactura`.
+- Clave de 49 dígitos, módulo 11.
+- Firma XAdES-BES externa vía `Signature\Signer`; no implemente una firma
+  casera.
+- `RECIBIDA` ≠ autorización; `PPR`/70 se espera; no reenvíe.
+- Reintentos solo para `TransportException`.
+- Lote ≤ 50 comprobantes / 500 KB.
+- PHP 8.2, `strict_types`, PSR-12, PHPStan 8, pruebas sin red.
+- Nunca incluya certificados, claves, `.env` ni XML reales.
+- Ejecute `composer check` antes de finalizar.

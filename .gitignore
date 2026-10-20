@@ -1,0 +1,14 @@
+/vendor/
+/.phpunit.cache/
+/.phpunit.result.cache
+/build/
+/coverage/
+.php-cs-fixer.cache
+*.p12
+*.pfx
+*.pem
+*.key
+.env
+.env.*
+!.env.example
+.DS_Store

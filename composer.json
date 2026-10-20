@@ -1,0 +1,56 @@
+{
+    "name": "julioserpone/sri-comprobantes-php",
+    "description": "Paquete PHP para emitir y consultar comprobantes electrónicos del SRI de Ecuador (esquema off-line).",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["sri", "ecuador", "facturacion-electronica", "comprobantes", "xades"],
+    "authors": [
+        {
+            "name": "Julio Serpone",
+            "homepage": "https://github.com/julioserpone"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/julioserpone/sri-comprobantes-php/issues",
+        "source": "https://github.com/julioserpone/sri-comprobantes-php"
+    },
+    "require": {
+        "php": "^8.2",
+        "ext-dom": "*",
+        "ext-libxml": "*",
+        "ext-openssl": "*",
+        "ext-soap": "*"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.64",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "JulioSerpone\\SriComprobantes\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "JulioSerpone\\SriComprobantes\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "analyse": "phpstan analyse --no-progress",
+        "cs": "php-cs-fixer fix --dry-run --diff",
+        "check": ["@cs", "@analyse", "@test"]
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": false
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    }
+}
