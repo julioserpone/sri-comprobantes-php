@@ -6,6 +6,15 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
 
 ## [Unreleased]
 
+### Por hacer
+
+- Firmador XAdES-BES de referencia (fuera del alcance actual; ver ADR 0002).
+- Generadores de XML por tipo de comprobante (fuera del alcance actual; ver
+  ADR 0005).
+- Persistencia transaccional para múltiples nodos.
+
+## [0.1.1] - 2026-10-20
+
 ### Corregido
 
 - `ConsultaResult` ignora fechas inválidas en lugar de lanzar una excepción.
@@ -18,13 +27,6 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
 
 - Instalación vía VCS mientras el paquete no esté en Packagist.
 - Limitación de rulesets en repositorios privados sin GitHub Pro.
-
-### Por hacer
-
-- Firmador XAdES-BES de referencia (fuera del alcance actual; ver ADR 0002).
-- Generadores de XML por tipo de comprobante (fuera del alcance actual; ver
-  ADR 0005).
-- Persistencia transaccional para múltiples nodos.
 
 ## [0.1.0] - 2026-10-20
 
@@ -51,5 +53,6 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
 - Validación TLS estricta por defecto.
 - Límite de tamaño y escape de CDATA en lotes.
 
-[Unreleased]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/julioserpone/sri-comprobantes-php/releases/tag/v0.1.0
