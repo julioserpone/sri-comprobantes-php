@@ -51,6 +51,6 @@ printf("Clave: %s\n", $clave);
 printf("Estado autorización: %s\n", $result->estadoAutorizacion ?? '(sin dato)');
 printf("Estado consulta: %s\n", $result->estadoConsulta ?? '(sin dato)');
 
-foreach ($result->mensajes() as $mensaje) {
+foreach ($result->mensajes as $mensaje) {
     printf("Mensaje: %s\n", (string) $mensaje);
 }
