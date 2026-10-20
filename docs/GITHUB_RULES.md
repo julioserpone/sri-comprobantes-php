@@ -6,21 +6,24 @@ versionada en `.github/`.
 
 ## 0. Estado actual (20/10/2026)
 
-- Repositorio **privado** en una cuenta sin GitHub Pro.
-- GitHub rechazó la creación del ruleset con **HTTP 403**: "Upgrade to GitHub
-  Pro or make this repository public to enable this feature".
-- Por lo tanto, **la protección de `main` no está activa todavía**. El CI sí
-  está activo y ejecuta la matriz de PHP 8.2–8.5.
-- Para activarla: haga el repo público o pase a un plan con rulesets y ejecute
-  `./scripts/setup-github.sh julioserpone/sri-comprobantes-php`.
-- Mientras no haya protección, no haga push directo a `main` por costumbre:
-  use ramas y PR para mantener el historial.
+- Repositorio **público**.
+- Ruleset **`main-protection`** (ID `25503138`) con `enforcement: active` sobre
+  `refs/heads/main`.
+- **PR obligatorio** para fusionar. Se permiten 0 aprobaciones (auto-fusión)
+  porque el proyecto tiene un mantenedor; si el equipo crece, suba el mínimo a 1.
+- **Historial lineal**, conversaciones resueltas y prohibición de borrado y
+  force-push.
+- **Check requerido:** `ci-success`, que solo pasa si toda la matriz de CI
+  (PHP 8.2, 8.3, 8.4 y 8.5), el estilo, PHPStan y `composer audit` están OK.
+- **Sin bypass**, incluido el administrador (`current_user_can_bypass: never`).
+- El ruleset se aplicó después de hacer público el repositorio. En un repo
+  privado sin GitHub Pro, GitHub rechaza los rulesets con HTTP 403.
 
 ## 1. Configuración del repositorio
 
 | Ajuste | Valor | Motivo |
 | --- | --- | --- |
-| Visibilidad | Privada por defecto | El código fiscal puede ser sensible; se puede hacer público después |
+| Visibilidad | Pública | Código y documentación abiertos; sin secretos ni datos reales |
 | Rama por defecto | `main` | Convención |
 | Issues | Habilitados | Seguimiento |
 | Wiki / Projects | Deshabilitados | Evitar documentación duplicada |
@@ -35,8 +38,9 @@ Script idempotente:
 ./scripts/setup-github.sh julioserpone/sri-comprobantes-php
 ```
 
-El script requiere `gh auth login` con permisos de administración. Si el plan de
-GitHub no permite alguna regla en un repo privado, muestra un aviso y continúa.
+El script requiere `gh auth login` con permisos de administración. Si el repo
+vuelve a ser privado y el plan de GitHub no permite rulesets, muestra un aviso y
+continúa sin bloquear el resto de la configuración.
 
 ## 2. Protección de `main`
 
@@ -54,7 +58,7 @@ Reglas:
   `required_approving_review_count` a 1.
 - **Check requerido:** `ci-success`, con política estricta (la rama debe estar
   actualizada).
-- **Sin bypass** para administradores (si el plan lo permite).
+- **Sin bypass**, incluido el administrador (`current_user_can_bypass: never`).
 
 Aplicar:
 
