@@ -40,6 +40,8 @@ Electrónicos Offline v2.34 (julio 2026)**.
   certificación autorizada en Ecuador (PKCS#12 para el flujo soportado).
 - Un firmador XAdES-BES validado (HSM, servicio de firma o librería
   especializada). Ver [Firma](#firma).
+- Opcional: `aws/aws-sdk-php` si usa el adaptador `AwsLambdaInvoker` con AWS
+  Lambda.
 
 ## Instalación
 
@@ -187,7 +189,7 @@ $consulta->estadoAutorizacion; // AUTORIZADO, NO AUTORIZADO, ...
 | Armado del XML de lote (Tabla 8) | Sí |
 | Almacenamiento local de XML/estado | Sí, implementación mínima |
 | Generación del XML de factura/notas/retenciones | **No** |
-| Firma XAdES-BES | **No** (interfaz + carga de PKCS#12) |
+| Firma XAdES-BES | **No** (interfaz, carga de PKCS#12 y adaptador Lambda) |
 | Descarga masiva desde el portal | **No** (no existe API oficial) |
 
 ### Alcance
@@ -258,6 +260,54 @@ $signer = new CallbackSigner(
 );
 
 $xmlFirmado = $signer->sign($xml);
+```
+
+### Firmador Lambda del proyecto
+
+Si usas el firmador [`sri-xades-signer`](https://github.com/julioserpone/sri-xades-signer)
+en modo multicliente, el paquete incluye `LambdaSigner`. El backend debe instalar el SDK de AWS
+(opcional, no es dependencia obligatoria del paquete):
+
+```bash
+composer require aws/aws-sdk-php
+```
+
+```php
+use Aws\Lambda\LambdaClient;
+use JulioSerpone\SriComprobantes\Signature\AwsLambdaInvoker;
+use JulioSerpone\SriComprobantes\Signature\LambdaSigner;
+
+$lambda = new LambdaClient([
+    'version' => 'latest',
+    'region' => 'us-east-2',
+    // Usa la cadena de credenciales IAM del backend; no hardcodees claves.
+]);
+
+$signer = new LambdaSigner(
+    new AwsLambdaInvoker($lambda, 'sri-xades-signer-invoke'),
+    $tenantUuid,
+    $passwordDelPkcs12,
+);
+
+$xmlFirmado = $signer->sign($xml);
+```
+
+`LambdaSigner` representa a **un** inquilino: constrúyalo por operación y no reutilice la instancia
+para otro UUID. El password se envía al firmador por la invocación IAM/TLS; no lo registre, no lo
+ponga en una cola ni lo persista en claro. El firmador lee el `.p12` desde
+`tenants/<uuid>/certificate.p12` en S3 y devuelve el XML firmado.
+
+Para pruebas o integraciones propias puede usar `CallableLambdaInvoker`:
+
+```php
+use JulioSerpone\SriComprobantes\Signature\CallableLambdaInvoker;
+use JulioSerpone\SriComprobantes\Signature\LambdaSigner;
+
+$invoker = new CallableLambdaInvoker(
+    fn (array $payload): array => $miClienteLambda->invocar($payload)
+);
+
+$signer = new LambdaSigner($invoker, $tenantUuid, $passwordDelPkcs12);
 ```
 
 `P12Certificate` carga un PKCS#12 y expone certificado/clave en PEM para un

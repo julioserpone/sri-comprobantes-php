@@ -52,7 +52,7 @@ src/
   Exception/     errores tipados
   Retry/         backoff para transporte
   Service/       orquestación de emisión
-  Signature/     interfaz XAdES-BES + PKCS#12
+  Signature/     interfaz XAdES-BES + PKCS#12 + adaptador Lambda
   Storage/       persistencia mínima
   Support/       normalización de respuestas SOAP
   Transport/     abstracción + SoapTransport

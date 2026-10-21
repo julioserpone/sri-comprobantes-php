@@ -26,6 +26,9 @@
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^11.4"
     },
+    "suggest": {
+        "aws/aws-sdk-php": "Permite usar AwsLambdaInvoker con un cliente AWS Lambda real."
+    },
     "autoload": {
         "psr-4": {
             "JulioSerpone\\SriComprobantes\\": "src/"
