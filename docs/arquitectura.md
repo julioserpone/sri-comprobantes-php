@@ -50,6 +50,8 @@ Piezas laterales:
   Xml\LoteBuilder                → sobre <lote>
   Signature\Signer               → integración XAdES-BES
   Signature\P12Certificate       → carga PKCS#12
+  Signature\LambdaSigner         → adaptador para firmador Lambda directo
+  Signature\LambdaInvoker        → abstracción de invocación Lambda
   Retry\RetryPolicy              → backoff para transporte
   Storage\ComprobanteRepository  → trazabilidad
 ```
@@ -82,7 +84,8 @@ Piezas laterales:
 
 ## Puntos de extensión
 
-- **Firmador:** implemente `Signature\Signer` o use `CallbackSigner`.
+- **Firmador:** implemente `Signature\Signer`, use `CallbackSigner` o use el adaptador
+  `LambdaSigner` con el firmador `sri-xades-signer`.
 - **Transporte:** implemente `Transport` con Guzzle, un proxy o un cliente
   corporativo.
 - **Persistencia:** implemente `Storage\ComprobanteRepository` sobre PDO,
@@ -113,5 +116,7 @@ Piezas laterales:
 
 Ver [ADR 0001](adr/0001-esquema-offline-y-endpoints.md),
 [ADR 0002](adr/0002-firma-xades-bes.md),
-[ADR 0003](adr/0003-consulta-masiva.md) y
-[ADR 0004](adr/0004-lotes.md).
+[ADR 0003](adr/0003-consulta-masiva.md),
+[ADR 0004](adr/0004-lotes.md),
+[ADR 0005](adr/0005-sin-generador-xml.md) y
+[ADR 0006](adr/0006-lambda-directo.md).

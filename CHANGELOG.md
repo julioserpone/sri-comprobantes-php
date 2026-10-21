@@ -6,6 +6,17 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
 
 ## [Unreleased]
 
+### Añadido
+
+- `Signature\LambdaSigner` para firmar con el firmador `sri-xades-signer` desplegado como Lambda
+  en modo multicliente.
+- `Signature\LambdaInvoker`, `CallableLambdaInvoker` y `AwsLambdaInvoker` como adaptadores de
+  invocación; `aws/aws-sdk-php` queda como dependencia sugerida, no obligatoria.
+- Validación del UUID y del password en `LambdaSigner`, mapeo de errores remotos a
+  `SignatureException`, ocultamiento del password en `__debugInfo` y bloqueo de serialización.
+- Pruebas del firmador Lambda y del adaptador AWS.
+- ADR 0006 y documentación de uso en README y arquitectura.
+
 ### Por hacer
 
 - Firmador XAdES-BES de referencia (fuera del alcance actual; ver ADR 0002).
