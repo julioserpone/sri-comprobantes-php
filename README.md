@@ -367,6 +367,9 @@ CI.
 - [Guía técnica SRI](docs/guia-tecnica-sri.md): flujo, endpoints, firma,
   estados, errores y consultas.
 - [Arquitectura](docs/arquitectura.md): capas, decisiones y puntos de extensión.
+- Lector de comprobantes recibidos: `Comprobante\ComprobanteReader` interpreta
+  factura, liquidación de compra, nota de crédito, nota de débito, guía de
+  remisión y comprobante de retención a partir del XML autorizado.
 - [Consulta masiva](docs/consulta-masiva.md): qué existe, qué no y alternativas.
 - [Fuentes oficiales](docs/fuentes-oficiales.md): enlaces y fecha de verificación.
 - [Reglas de GitHub](docs/GITHUB_RULES.md): protección de rama, checks y
