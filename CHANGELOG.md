@@ -5,6 +5,16 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
 [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
+### Añadido
+- `Comprobante\ComprobanteReader`: lector del XML autorizado de comprobantes
+  recibidos, contraparte de `LoteBuilder`. Soporta factura (01), liquidación de
+  compra (03), nota de crédito (04), nota de débito (05), guía de remisión (06)
+  y comprobante de retención (07).
+- DTOs `ComprobanteData`, `ItemData`, `ImpuestoData` y `RetencionData` con los
+  montos en centavos y `totalsMismatch()` sin correcciones silenciosas.
+- `Comprobante\ComprobanteException` con mensajes que nunca incluyen el XML.
+- Pruebas del lector con fixtures de los seis tipos, namespace en la raíz, XXE,
+  clave inválida, tamaño máximo y conversión de montos.
 
 ### Añadido
 
