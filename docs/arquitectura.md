@@ -52,6 +52,7 @@ Piezas laterales:
   Signature\P12Certificate       → carga PKCS#12
   Signature\LambdaSigner         → adaptador para firmador Lambda directo
   Signature\LambdaInvoker        → abstracción de invocación Lambda
+  Comprobante\ComprobanteReader  → lectura del XML autorizado (01/03/04/05/06/07)
   Retry\RetryPolicy              → backoff para transporte
   Storage\ComprobanteRepository  → trazabilidad
 ```
@@ -66,8 +67,11 @@ Piezas laterales:
 5. `RecepcionClient::validar()` envía el XML o el lote.
 6. Si `RECIBIDA`, `AutorizacionClient::consultar()` consulta el estado.
 7. `EmisionService::emitir()` encapsula 5–6 y lanza `SriException` ante un
-   rechazo.
-8. La aplicación guarda el XML autorizado, el estado y los metadatos.
+   rechazo; `esperarAutorizacion()` devuelve el último estado sin ocultar `PPR`.
+8. La aplicación guarda el XML autorizado, el estado y los metadatos
+   (`Storage\ComprobanteRepository` es solo una implementación mínima).
+9. Para conciliar comprobantes, `Comprobante\ComprobanteReader` interpreta el
+   XML autorizado; para emitir, el XML lo construye la aplicación.
 
 ## Decisiones de diseño
 
@@ -90,6 +94,9 @@ Piezas laterales:
   corporativo.
 - **Persistencia:** implemente `Storage\ComprobanteRepository` sobre PDO,
   Redis, S3 o un servicio interno.
+- **Lector de comprobantes:** extienda su propio parser si el SRI publica un
+  tipo o versión que `ComprobanteReader` aún no cubre; no modifique el contrato
+  de `ComprobanteData` sin ADR.
 - **Reintentos:** pase una `RetryPolicy` con otra política o un callback
   `shouldRetry`.
 - **Reloj:** los métodos que reciben fechas aceptan `DateTimeInterface`; para
@@ -97,18 +104,21 @@ Piezas laterales:
 
 ## Pruebas
 
-- Unitarias: clave, entornos, errores, DTO, lote, XSD, almacenamiento, PKCS#12.
+- Unitarias: clave, entornos, errores, DTO, lote, XSD, almacenamiento, PKCS#12,
+  firmador Lambda y lector de comprobantes (`tests/Fixtures` con los seis tipos).
 - Integración simulada: `FakeTransport` devuelve respuestas del SRI y permite
   verificar operación y argumentos.
 - Integración real: **no** se ejecuta en CI. Se hace en el ambiente de
   certificación con un certificado de pruebas, XSD oficiales y un firmador
   validado.
+- Las pruebas requieren `ext-mbstring` por la normalización del lector.
 
 ## Lo que esta arquitectura no resuelve
 
 - Generación de XML por tipo/versión (factura, notas, retenciones, guías).
 - Cálculo de impuestos y validaciones de negocio.
 - Firma XAdES-BES.
+- Validación de la firma del XML recibido (no verifica la firma XAdES).
 - RIDE.
 - Consulta masiva (no hay API oficial).
 - Colas, reintentos persistentes o idempotencia de extremo a extremo; eso

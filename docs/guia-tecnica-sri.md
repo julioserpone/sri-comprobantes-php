@@ -276,7 +276,12 @@ Reglas:
   con `autorizacionComprobanteLote`.
 
 `Xml\LoteBuilder` arma este XML, valida la clave y el RUC, limita a 50
-comprobantes/512000 bytes y escapa la secuencia `]]>` dentro de CDATA.
+comprobantes/512000 bytes y escapa la secuencia `]]>` dentro de CDATA. El lote
+no se firma como sobre: los comprobantes ya van firmados dentro del CDATA.
+
+El límite 512000 corresponde a 500 KB decimales. Si la ficha usa 500 KiB
+(512000 vs 512000 bytes de 1024), confirme el valor exacto con el SRI antes de
+operar al límite. **Validar**.
 
 ## 7. Firma electrónica
 
@@ -320,7 +325,11 @@ El paquete **no implementa XAdES-BES**. Ofrece:
 
 - `Signature\Signer`: interfaz para un firmador validado.
 - `Signature\CallbackSigner`: adaptador para HSM, servicio o librería externa.
-- `Signature\P12Certificate`: carga y verificación básica de un PKCS#12.
+- `Signature\P12Certificate`: carga y verificación básica de un PKCS#12
+  (coincidencia clave/certificado, vigencia y días restantes).
+- `Signature\LambdaSigner` con `LambdaInvoker`: adaptador para el firmador
+  `sri-xades-signer` desplegado como Lambda, por inquilino. Ver
+  [ADR 0006](adr/0006-lambda-directo.md).
 
 Ver [ADR 0002](adr/0002-firma-xades-bes.md). No use un firmador casero sin
 probarlo contra el ambiente de certificación del SRI.
@@ -632,7 +641,41 @@ legales, captchas, límites y estabilidad.
 
 Ver el documento dedicado: [consulta-masiva.md](consulta-masiva.md).
 
-## 15. Seguridad
+## 15. Lectura de comprobantes recibidos
+
+**Inferencia del paquete:** cuando el SRI autoriza, el XML autorizado se
+obtiene en `autorizacion/comprobante` (respuesta de `autorizacionComprobante`)
+o desde el almacenamiento propio. `Comprobante\ComprobanteReader` interpreta
+esa respuesta **sin validarla contra el XSD**: asume que el documento ya fue
+autorizado por el SRI. Si el XML puede ser no confiable, valídelo antes con
+`Xml\XsdValidator`.
+
+Soporte actual de lectura:
+
+| Código | Comprobante | Nodo de información |
+| --- | --- | --- |
+| `01` | Factura | `infoFactura` |
+| `03` | Liquidación de compra | `infoLiquidacionCompra` |
+| `04` | Nota de crédito | `infoNotaCredito` + `infoNotaModificada` |
+| `05` | Nota de débito | `infoNotaDebito` + `infoNotaModificada` |
+| `06` | Guía de remisión | `infoGuiaRemision` |
+| `07` | Comprobante de retención | `infoCompRetencion` |
+
+Reglas del lector:
+
+- Los montos se convierten a **centavos** con aritmética de cadenas.
+- La clave de acceso se valida con `AccessKeyGenerator::isValid()`.
+- Se usa `LIBXML_NONET` y se deshabilitan entidades y DTD (XXE).
+- Tamaño máximo: `ComprobanteReader::MAX_BYTES` (5 MB).
+- `ComprobanteData::totalsMismatch()` reporta totales que no cuadran; no los
+  corrige.
+- La lectura **no** sustituye al RIDE ni reemplaza la validación tributaria.
+
+El lector no interpreta otros tipos (por ejemplo, comprobantes de exportación
+con estructura distinta, nómina o documentos no publicados en la ficha v2.34):
+lanza `ComprobanteException::tipoNoSoportado()`.
+
+## 16. Seguridad
 
 - Use TLS con verificación estricta; no desactive la validación para "que
   funcione".
@@ -646,7 +689,7 @@ Ver el documento dedicado: [consulta-masiva.md](consulta-masiva.md).
 - No confíe en la respuesta del SRI sin verificar el estado y la firma del XML
   autorizado cuando su proceso lo requiera.
 
-## 16. Checklist de implementación
+## 17. Checklist de implementación
 
 - [ ] Identificar tipo, versión de esquema y anexos aplicables.
 - [ ] Descargar/versionar los XSD oficiales.
@@ -665,7 +708,7 @@ Ver el documento dedicado: [consulta-masiva.md](consulta-masiva.md).
 - [ ] Probar en certificación con cada tipo de comprobante.
 - [ ] Definir monitoreo, alertas y plan de rotación de certificados.
 
-## 17. Fuentes y verificación
+## 18. Fuentes y verificación
 
 | Fuente | Uso | Fecha |
 | --- | --- | --- |

@@ -5,7 +5,15 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
 [SemVer](https://semver.org/lang/es/).
 
 ## [Unreleased]
+
+## [0.2.1] - 2026-11-05
+
 ### Añadido
+
+- `AutorizacionClient::lastResponse()`: expone el cuerpo XML crudo de la
+  última respuesta SOAP para recuperar la autorización cuando el sobre no se
+  puede interpretar como `RespuestaAutorizacionComprobante` (ya declarado en
+  `Transport::lastResponse()` desde v0.1.0).
 - `Comprobante\ComprobanteReader`: lector del XML autorizado de comprobantes
   recibidos, contraparte de `LoteBuilder`. Soporta factura (01), liquidación de
   compra (03), nota de crédito (04), nota de débito (05), guía de remisión (06)
@@ -15,6 +23,21 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
 - `Comprobante\ComprobanteException` con mensajes que nunca incluyen el XML.
 - Pruebas del lector con fixtures de los seis tipos, namespace en la raíz, XXE,
   clave inválida, tamaño máximo y conversión de montos.
+
+`ComprobanteReader` requiere `ext-mbstring`; el paquete no la declara como
+requisito porque el resto de la librería funciona sin ella.
+
+### Documentación
+
+- README: instalación desde Packagist, ejemplos de consulta de factura
+  negociable, `P12Certificate`, catálogo `SriError` y secciones nuevas de
+  lectura de comprobantes y persistencia local.
+- Guía técnica: sección de lectura de comprobantes (soporte, límites y
+  seguridad) y aclaración del límite de bytes del lote.
+- Arquitectura: el lector y el límite de la persistencia local quedan
+  declarados en el mapa de piezas y en los puntos de extensión.
+
+## [0.2.0] - 2026-10-27
 
 ### Añadido
 
@@ -26,8 +49,9 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
   `SignatureException`, ocultamiento del password en `__debugInfo` y bloqueo de serialización.
 - Pruebas del firmador Lambda y del adaptador AWS.
 - ADR 0006 y documentación de uso en README y arquitectura.
+- Primera publicación en Packagist.
 
-### Por hacer
+## Por hacer
 
 - Firmador XAdES-BES de referencia (fuera del alcance actual; ver ADR 0002).
 - Generadores de XML por tipo de comprobante (fuera del alcance actual; ver
@@ -83,7 +107,9 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
 - Validación TLS estricta por defecto.
 - Límite de tamaño y escape de CDATA en lotes.
 
-[Unreleased]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/julioserpone/sri-comprobantes-php/releases/tag/v0.2.0
 [0.1.2]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/julioserpone/sri-comprobantes-php/releases/tag/v0.1.0

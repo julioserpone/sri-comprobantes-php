@@ -68,6 +68,18 @@ final class ClientTest extends TestCase
         self::assertNotNull($result->first()?->fechaAutorizacion);
     }
 
+    public function testAutorizacionExposesRawLastResponse(): void
+    {
+        $key = str_repeat('1', 49);
+        $raw = '<?xml version="1.0"?><soap:Envelope><soap:Body/></soap:Envelope>';
+        $transport = new FakeTransport([null], $raw);
+        $client = new AutorizacionClient($transport);
+
+        $client->consultar($key);
+
+        self::assertSame($raw, $client->lastResponse());
+    }
+
     public function testAutorizacionRejectsInvalidKey(): void
     {
         $this->expectException(\InvalidArgumentException::class);
