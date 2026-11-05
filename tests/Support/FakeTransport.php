@@ -15,7 +15,7 @@ final class FakeTransport implements Transport
     private array $responses;
 
     /** @param list<mixed> $responses */
-    public function __construct(array $responses = [])
+    public function __construct(array $responses = [], private ?string $rawResponse = null)
     {
         $this->responses = $responses;
     }
@@ -38,6 +38,6 @@ final class FakeTransport implements Transport
 
     public function lastResponse(): ?string
     {
-        return null;
+        return $this->rawResponse;
     }
 }

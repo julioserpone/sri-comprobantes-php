@@ -4,12 +4,13 @@ Paquete PHP sin framework para integrar la emisión y consulta de **comprobantes
 electrónicos del Servicio de Rentas Internas (SRI) de Ecuador**, esquema
 **off-line**.
 
-> **Estado: alfa (0.1.x).** El paquete implementa la clave de acceso, el
+> **Estado: alfa (0.2.x).** El paquete implementa la clave de acceso, el
 > transporte SOAP, los clientes de recepción/autorización/consulta, los DTO de
-> respuesta, el catálogo de errores, reintentos, validación XSD, armado de lotes
-> y almacenamiento local. **No incluye un firmador XAdES-BES** ni un generador
-> de XML por tipo de comprobante; esas piezas se integran mediante interfaces
-> explícitas. Lea [Firma](#firma) y [Alcance](#alcance).
+> respuesta, el catálogo de errores, reintentos, validación XSD, armado de lotes,
+> **lectura (interpretación) de comprobantes autorizados** y almacenamiento
+> local. **No incluye un firmador XAdES-BES** ni un generador de XML por tipo de
+> comprobante; esas piezas se integran mediante interfaces explícitas. Lea
+> [Firma](#firma) y [Alcance](#alcance).
 
 Este proyecto **no está afiliado ni respaldado por el SRI**. La fuente de verdad
 es la ficha técnica oficial y los XSD publicados por el SRI. La versión de
@@ -26,6 +27,8 @@ Electrónicos Offline v2.34 (julio 2026)**.
 - [Clave de acceso](#clave-de-acceso)
 - [Firma](#firma)
 - [Reintentos y estados](#reintentos-y-estados)
+- [Leer un comprobante autorizado](#leer-un-comprobante-autorizado)
+- [Persistencia local](#persistencia-local)
 - [Seguridad](#seguridad)
 - [Pruebas y calidad](#pruebas-y-calidad)
 - [Documentación](#documentación)
@@ -40,14 +43,29 @@ Electrónicos Offline v2.34 (julio 2026)**.
   certificación autorizada en Ecuador (PKCS#12 para el flujo soportado).
 - Un firmador XAdES-BES validado (HSM, servicio de firma o librería
   especializada). Ver [Firma](#firma).
+- Si usa `ComprobanteReader`, la extensión `mbstring` (normalización de
+  descripciones a mayúsculas sin acentos).
 - Opcional: `aws/aws-sdk-php` si usa el adaptador `AwsLambdaInvoker` con AWS
   Lambda.
 
 ## Instalación
 
-El paquete **todavía no está publicado en Packagist**. Mientras tanto, instálelo
-desde el repositorio VCS. Si en el futuro el repositorio vuelve a ser privado,
-configure las credenciales de GitHub para Composer.
+El paquete está publicado en [Packagist](https://packagist.org/packages/julioserpone/sri-comprobantes-php):
+
+```bash
+composer require julioserpone/sri-comprobantes-php
+```
+
+Está en estado alfa, por lo que Composer exige declarar la versión de forma
+explícita:
+
+```bash
+composer require julioserpone/sri-comprobantes-php:^0.2
+```
+
+Alternativa desde el repositorio VCS (útil para probar una rama o un commit no
+etiquetado). Si el repositorio vuelve a ser privado, configure las credenciales
+de GitHub para Composer:
 
 ```json
 {
@@ -55,19 +73,13 @@ configure las credenciales de GitHub para Composer.
     { "type": "vcs", "url": "https://github.com/julioserpone/sri-comprobantes-php" }
   ],
   "require": {
-    "julioserpone/sri-comprobantes-php": "^0.1"
+    "julioserpone/sri-comprobantes-php": "^0.2"
   }
 }
 ```
 
 ```bash
 composer update julioserpone/sri-comprobantes-php
-```
-
-Cuando se publique en Packagist, bastará con:
-
-```bash
-composer require julioserpone/sri-comprobantes-php
 ```
 
 ## Inicio rápido
@@ -161,7 +173,7 @@ $autorizacion = $service->emitir(
 termina en un estado no autorizado. Si prefiere controlar el flujo, use
 `enviar()` y `esperarAutorizacion()` por separado.
 
-### 5. Consultar el estado desde el portal/WS de consultas
+### 5. Consultar el estado de autorización
 
 ```php
 use JulioSerpone\SriComprobantes\Client\ConsultaClient;
@@ -170,8 +182,20 @@ $consulta = (new ConsultaClient(
     new SoapTransport($environment->wsdl(SriService::CONSULTA))
 ))->estado($clave);
 
-$consulta->estadoAutorizacion; // AUTORIZADO, NO AUTORIZADO, ...
+$consulta->estadoAutorizacion; // AUTORIZADO, NO AUTORIZADO, PENDIENTE DE ANULAR, ANULADO
+$consulta->estadoConsulta;     // p. ej. RECHAZADA cuando la clave no existe o está fuera de rango
+$consulta->isAutorizado();
+
+// Factura comercial negociable (otro WSDL y otro servicio)
+$factura = (new ConsultaClient(
+    new SoapTransport($environment->wsdl(SriService::FACTURA_NEGOCIABLE))
+))->facturaNegociable($clave);
+
+$factura->isConfirmada();
 ```
+
+Opcionalmente consulte el lote con
+`(new AutorizacionClient($transport))->consultarLote($claveDelLote)`.
 
 ## Qué incluye y qué no
 
@@ -183,10 +207,11 @@ $consulta->estadoAutorizacion; // AUTORIZADO, NO AUTORIZADO, ...
 | Recepción individual y por lote | Sí (cliente) |
 | Autorización individual y por lote | Sí (clientes y DTO) |
 | Consulta de estado y factura negociable | Sí |
-| Catálogo de errores/advertencias v2.34 | Sí |
+| Catálogo de errores/advertencias v2.34 | Sí (`Error\SriError`, asociado a `Dto\Mensaje`) |
 | Reintentos con backoff | Sí, solo fallos de transporte |
 | Validación contra XSD local | Sí |
 | Armado del XML de lote (Tabla 8) | Sí |
+| Lectura del XML autorizado (01, 03, 04, 05, 06, 07) | Sí (`Comprobante\ComprobanteReader`) |
 | Almacenamiento local de XML/estado | Sí, implementación mínima |
 | Generación del XML de factura/notas/retenciones | **No** |
 | Firma XAdES-BES | **No** (interfaz, carga de PKCS#12 y adaptador Lambda) |
@@ -311,8 +336,26 @@ $signer = new LambdaSigner($invoker, $tenantUuid, $passwordDelPkcs12);
 ```
 
 `P12Certificate` carga un PKCS#12 y expone certificado/clave en PEM para un
-firmador externo. Trate la clave privada como secreto: no la loguee, no la
-persista y no la envíe por red.
+firmador externo. Comprueba que la clave privada corresponde al certificado y
+expone vigencia:
+
+```php
+use JulioSerpone\SriComprobantes\Signature\P12Certificate;
+
+$p12 = P12Certificate::fromFile('/ruta/segura/certificado.p12', $password);
+
+$p12->subject();
+$p12->issuer();
+$p12->serialNumber();
+$p12->validFrom();
+$p12->validTo();
+$p12->isExpired();
+$p12->daysUntilExpiry();
+$p12->certificatePem(); // y privateKeyPem() para su firmador
+```
+
+Trate la clave privada como secreto: no la loguee, no la persista y no la envíe
+por red.
 
 ## Reintentos y estados
 
@@ -327,6 +370,84 @@ persista y no la envíe por red.
 `RetryPolicy` solo reintenta `TransportException` por defecto. Los errores de
 validación del SRI no se reintentan: el XML debe corregirse. Ajuste el número de
 intentos y el intervalo según su operación; no bloquee un worker durante horas.
+
+`EmisionService` aplica esa política sobre cada llamada de recepción y de
+autorización, y espera `intentos × segundosEntreIntentos` como máximo. No es un
+procesador en segundo plano: el `PPR` de hasta 24 horas se gestiona en su
+aplicación (cola, cron o tarea programada).
+
+Los códigos de la ficha v2.34 se consultan desde el catálogo:
+
+```php
+use JulioSerpone\SriComprobantes\Error\SriError;
+
+$mensaje->isError();    // true si el tipo es ERROR
+$mensaje->isWarning();  // advertencias 59, 60, 62, 68
+$mensaje->error();      // SriError|null
+SriError::FIRMA_INVALIDA->description();
+```
+
+`EmisionService::emitir()` lanza `SriException`; `error()` devuelve el
+`SriError` correspondiente cuando el identificador está catalogado.
+
+## Leer un comprobante autorizado
+
+`ComprobanteReader` interpreta el XML autorizado de factura (`01`), liquidación
+de compra (`03`), nota de crédito (`04`), nota de débito (`05`), guía de
+remisión (`06`) y comprobante de retención (`07`). Es la contraparte de
+`LoteBuilder`: no genera ni firma, solo lee.
+
+```php
+use JulioSerpone\SriComprobantes\Comprobante\ComprobanteReader;
+
+// $xmlAutorizado viene de $result->xmlAutorizado() o de la consulta por clave.
+$comprobante = (new ComprobanteReader())->read($xmlAutorizado);
+
+$comprobante->tipo;                // '01', '03', ...
+$comprobante->claveAcceso;
+$comprobante->rucEmisor;
+$comprobante->fechaEmision;        // Y-m-d
+$comprobante->totalCentavos;       // int, en centavos
+$comprobante->items;               // list<ItemData>
+$comprobante->impuestos;           // list<ImpuestoData>
+$comprobante->retenciones;         // list<RetencionData> (tipo 07)
+$comprobante->clavesRelacionadas;  // numDocModificado de NC/ND
+$comprobante->totalsMismatch();    // true si los totales no cuadran
+```
+
+Características:
+
+- Todos los montos son enteros en **centavos**; nunca se usa `float`.
+- La clave de acceso se valida (longitud y módulo 11) antes de interpretar.
+- Carga con `LIBXML_NONET`, sin entidades y sin DTD (mitiga XXE).
+- Límite de `ComprobanteReader::MAX_BYTES` (5 MB) por documento.
+- No corrige totales: `totalsMismatch()` informa la inconsistencia tal cual.
+- Los errores se reportan como `Comprobante\ComprobanteException` y nunca
+  incluyen el contenido del XML.
+- Sobre el resultado de la consulta, `AutorizacionClient::lastResponse()`
+  expone el sobre SOAP crudo para recuperar el XML cuando el sobre no se pudo
+  interpretar como `RespuestaAutorizacionComprobante`.
+
+## Persistencia local
+
+`Storage\ComprobanteRepository` define `guardar()`, `obtenerXml()` y
+`obtenerEstado()`. La implementación incluida escribe el XML y un JSON de
+metadatos en un directorio, de forma atómica y con permisos `0600` (directorio
+`0700`).
+
+```php
+use JulioSerpone\SriComprobantes\Storage\FilesystemComprobanteRepository;
+
+$repo = new FilesystemComprobanteRepository('/var/sri/comprobantes');
+$repo->guardar($clave, $xmlAutorizado, 'AUTORIZADO');
+
+$xml = $repo->obtenerXml($clave);
+$estado = $repo->obtenerEstado($clave);
+```
+
+Es una implementación mínima: **no** es apta para varios servidores ni para
+reemplazar una base de datos transaccional. Implemente la interfaz sobre PDO,
+S3 o su servicio interno si necesita concurrencia o auditoría.
 
 ## Seguridad
 
@@ -349,27 +470,27 @@ composer install
 composer check     # php-cs-fixer + phpstan nivel 8 + phpunit
 composer test
 composer analyse
+composer cs
 ```
 
-Las pruebas no llaman al SRI: usan un transporte falso. La integración real debe
-probarse en el ambiente de certificación con un certificado de pruebas y los XSD
-oficiales. Para una comprobación manual del servicio de consulta:
+Las pruebas no llaman al SRI: usan un transporte falso y fixtures locales. La
+integración real debe probarse en el ambiente de certificación con un
+certificado de pruebas y los XSD oficiales. Para una comprobación manual del
+servicio de consulta:
 
 ```bash
 php scripts/smoke-consulta.php <clave-de-49-digitos> 1
 ```
 
-No use claves de producción en terminales compartidas ni ejecute este script en
-CI.
+El script vive en el repositorio y requiere haber ejecutado `composer install`
+allí; no forma parte del paquete instalado vía Composer. No use claves de
+producción en terminales compartidas ni ejecute el script en CI.
 
 ## Documentación
 
 - [Guía técnica SRI](docs/guia-tecnica-sri.md): flujo, endpoints, firma,
   estados, errores y consultas.
 - [Arquitectura](docs/arquitectura.md): capas, decisiones y puntos de extensión.
-- Lector de comprobantes recibidos: `Comprobante\ComprobanteReader` interpreta
-  factura, liquidación de compra, nota de crédito, nota de débito, guía de
-  remisión y comprobante de retención a partir del XML autorizado.
 - [Consulta masiva](docs/consulta-masiva.md): qué existe, qué no y alternativas.
 - [Fuentes oficiales](docs/fuentes-oficiales.md): enlaces y fecha de verificación.
 - [Reglas de GitHub](docs/GITHUB_RULES.md): protección de rama, checks y

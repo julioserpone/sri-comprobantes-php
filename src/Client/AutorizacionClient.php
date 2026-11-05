@@ -29,6 +29,16 @@ final readonly class AutorizacionClient
         return AutorizacionResult::fromArray(Arr::toArray($response));
     }
 
+    /**
+     * Cuerpo crudo de la última respuesta SOAP. Permite recuperar la
+     * autorización cuando el sobre no se pudo interpretar como
+     * `RespuestaAutorizacionComprobante`.
+     */
+    public function lastResponse(): string
+    {
+        return (string) $this->transport->lastResponse();
+    }
+
     public function consultarLote(string $claveAccesoLote): LoteAutorizacionResult
     {
         $this->assertAccessKey($claveAccesoLote);
