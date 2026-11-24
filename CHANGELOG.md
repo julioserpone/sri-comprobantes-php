@@ -15,6 +15,11 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
   (p. ej. total declarado 2,62 frente a un "esperado" de 1,73). Afecta a
   `totalEsperadoCentavos()` y `totalsMismatch()`. `descuentoCentavos` se sigue
   exponiendo sin cambios para consulta.
+- `subtotalCentavos` cae a `infoNotaModificada/totalSinImpuestos` cuando la
+  factura no trae `infoFactura` (antes quedaba en 0 y arrastraba un falso
+  desvío en el cuadre).
+- Fixture `factura.xml` coherente: `totalSinImpuestos` ya es neto del
+  descuento global (90,00 con `totalDescuento` 10,00 e `importeTotal` 103,50).
 
 ## [0.2.1] - 2026-11-05
 

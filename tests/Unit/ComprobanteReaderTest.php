@@ -49,7 +49,7 @@ final class ComprobanteReaderTest extends TestCase
     {
         $comprobante = $this->reader->read(self::fixture('factura.xml'));
 
-        self::assertSame(10000, $comprobante->subtotalCentavos);
+        self::assertSame(9000, $comprobante->subtotalCentavos);
         self::assertSame(1000, $comprobante->descuentoCentavos);
         self::assertSame(1350, $comprobante->impuestoCentavos);
         self::assertSame(0, $comprobante->propinaCentavos);
@@ -90,7 +90,7 @@ final class ComprobanteReaderTest extends TestCase
     {
         $comprobante = $this->reader->read(self::fixture('factura.xml'));
 
-        self::assertSame(10000, $comprobante->subtotalCentavos);
+        self::assertSame(9000, $comprobante->subtotalCentavos);
         self::assertSame(1000, $comprobante->descuentoCentavos);
         self::assertSame(10350, $comprobante->totalEsperadoCentavos());
         self::assertSame(10350, $comprobante->totalCentavos);
