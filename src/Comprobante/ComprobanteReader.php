@@ -124,7 +124,7 @@ final class ComprobanteReader
             razonSocialReceptor: $this->textoOpcional($xpath, 'razonSocialComprador', $info)
                 ?? $this->textoOpcional($xpath, 'razonSocialProveedor', $info)
                 ?? $this->textoOpcional($xpath, 'razonSocialDestinatario'),
-            iceCentavos: $this->centavosOpcional($xpath, 'totalIce', $info),
+            iceCentavos: $this->iceCentavosDesdeImpuestos($xpath, $info),
             irbpnrCentavos: $this->centavosOpcional($xpath, 'totalIRBPNR', $info),
             propinaCentavos: $this->centavosOpcional($xpath, 'propina', $info),
             moneda: $this->textoOpcional($xpath, 'moneda', $info) ?? 'USD',
@@ -457,5 +457,32 @@ final class ComprobanteReader
         }
 
         throw ComprobanteException::campoInvalido('fechaAutorizacion');
+    }
+    /**
+     * ICE del comprobante.
+     *
+     * La ficha del SRI lo declara en `infoFactura/totalIce`, pero la mayoría de
+     * los emisores no lo envían y lo incluyen en cambio como `totalImpuesto`
+     * con `codigo` 3. Para que el cuadre
+     * (`importeTotal = totalSinImpuestos + impuestos + ICE + propina`) cierre,
+     * se usa `totalIce` cuando existe y, si no, la suma de esos impuestos.
+     */
+    private function iceCentavosDesdeImpuestos(DOMXPath $xpath, ?DOMElement $info): int
+    {
+        $totalIce = $this->centavosOpcional($xpath, 'totalIce', $info);
+
+        if ($totalIce !== 0) {
+            return $totalIce;
+        }
+
+        $ice = 0;
+
+        foreach ($this->impuestos($xpath, $info) as $impuesto) {
+            if ($impuesto->codigo === '3') {
+                $ice += $impuesto->valorCentavos;
+            }
+        }
+
+        return $ice;
     }
 }
