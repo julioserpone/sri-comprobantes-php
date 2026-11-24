@@ -56,20 +56,20 @@ final class ComprobanteData
      * cabecera (`totalSinImpuestos`) puede no cuadrar con la fórmula. Antes de
      * marcar una inconsistencia se compara contra lo que el documento declara.
      *
-     * Rango válido: total = subtotal − descuento + impuestos + ICE + IRBPNR +
-     * propina (los dos extremos admite el SRI cuando hay descuento global).
+     * Fórmula oficial del SRI: `importeTotal = totalSinImpuestos + impuestos
+     * + propina`. `totalSinImpuestos` es neto de descuentos, por lo que
+     * `totalDescuento` **no** se vuelve a restar.
      */
     public function declaradoEsperadoCentavos(): int
     {
         return $this->subtotalCentavos
-            - $this->descuentoCentavos
             + $this->impuestoCentavos
             + $this->iceCentavos
             + $this->irbpnrCentavos
             + $this->propinaCentavos;
     }
 
-    /** total = subtotal − descuento + impuestos + ICE + IRBPNR + propina */
+    /** total = subtotal + impuestos + ICE + IRBPNR + propina (`subtotal` ya es neto) */
     public function totalEsperadoCentavos(): int
     {
         return $this->declaradoEsperadoCentavos();

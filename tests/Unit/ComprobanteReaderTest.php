@@ -86,6 +86,17 @@ final class ComprobanteReaderTest extends TestCase
         self::assertSame(10350, $comprobante->totalEsperadoCentavos());
     }
 
+    public function test_no_vuelve_a_restar_los_descuentos_porque_el_subtotal_ya_es_neto(): void
+    {
+        $comprobante = $this->reader->read(self::fixture('factura.xml'));
+
+        self::assertSame(10000, $comprobante->subtotalCentavos);
+        self::assertSame(1000, $comprobante->descuentoCentavos);
+        self::assertSame(10350, $comprobante->totalEsperadoCentavos());
+        self::assertSame(10350, $comprobante->totalCentavos);
+        self::assertFalse($comprobante->totalsMismatch());
+    }
+
     /**
      * @return array<string, array{string, string}>
      */

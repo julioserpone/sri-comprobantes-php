@@ -6,6 +6,16 @@ Todos los cambios relevantes se documentan aquí. El formato sigue
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-24
+### Corregido
+- `ComprobanteData::declaradoEsperadoCentavos()` ya no resta `totalDescuento`:
+  según la ficha técnica del SRI `importeTotal = totalSinImpuestos + impuestos
+  + propina` y `totalSinImpuestos` viene neto de descuentos. Con la fórmula
+  anterior, toda factura con descuento global se marcaba como inconsistente
+  (p. ej. total declarado 2,62 frente a un "esperado" de 1,73). Afecta a
+  `totalEsperadoCentavos()` y `totalsMismatch()`. `descuentoCentavos` se sigue
+  exponiendo sin cambios para consulta.
+
 ## [0.2.1] - 2026-11-05
 
 ### Añadido
@@ -107,7 +117,8 @@ requisito porque el resto de la librería funciona sin ella.
 - Validación TLS estricta por defecto.
 - Límite de tamaño y escape de CDATA en lotes.
 
-[Unreleased]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/julioserpone/sri-comprobantes-php/releases/tag/v0.2.0
 [0.1.2]: https://github.com/julioserpone/sri-comprobantes-php/compare/v0.1.1...v0.1.2
